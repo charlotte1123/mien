@@ -1,0 +1,942 @@
+/*!
+ *
+ * XSJ xpass signin && signup dialog
+ * require [ jquery.js, artDialog.js ]
+ * 2014-11-16
+ */
+(function( w ){
+
+    var $_REFER = ( document.referrer ) || '',
+        $_URI = ( window.location.href ) || '',
+        $_TARGET = 'xpass_common_signup';
+
+	var xurl = 'https://apps-ws.xoyo.com/passport/', //上线前修改
+
+        DOM_List = [
+        '<div id="xsj-xpass">',
+            '<div class="s-tabs">',
+                '<span name="t_signin"><a class="active" href="javascript:;">登录</a></span>',
+                '<span name="t_signup"><a href="javascript:;">注册</a></span>',
+            '</div>',
+            '<div class="i-items t_signin">',
+                '<div id="sin_n_tips" class="i-n-tips" style="display:none;"><p class="i-n-tips-txt"></p></div>',
+                '<div class="i-line-l">',
+                    '<span class="i-txt">通行证：</span>',
+                    '<input class="txt-i" type="text" name="sin_act" value="" tabindex="1" t="请填写您的通行证账号" />',
+                    '<div class="i-ipt-tips" style="display:none;"></div>',
+                    '<span class="sv-txt"><a class="sin_t_sup" href="javascript:;">马上注册</a></span>',
+                '</div>',
+                '<div class="i-line-l">',
+                    '<span class="i-txt">密码：</span>',
+                    '<input class="txt-i" type="password" name="sin_pwd" value="" tabindex="2" t="请输入您的密码" />',
+                    '<div class="i-ipt-tips" style="display:none;"></div>',
+                    '<span class="sv-txt"><a href="//my.xoyo.com/find/index/" target="_blank">忘记密码？</a></span>',
+                '</div>',
+                '<div class="vcode-box">',
+                    '<span class="i-txt">验证码：</span>',
+                    '<div class="i-line-l J_jizhiCodeBox i-jizhi-wrap" style="display:none;">',
+                        '<div class="i-jizhi-login-box" id="captcha-login">',
+                            '<p id="wait-login" class="show">正在加载验证码......</p>',
+                        '</div>',
+                    '</div>',
+                    '<div class="i-line-l J_putongCodeBox" style="display:none;">',
+                        '<input class="txt-i vcode-i" type="text" name="sin_vde" value="" tabindex="3" />',
+                        '<img class="v_code signin_v_code" t="signin" src="//zhcdn01.xoyo.com/xassets/com/pf/xpass/v1/images/code.png" alt="点击更换验证码" />',
+
+                    '</div>',
+                '</div>',
+                '<div class="i-button-l"><button class="op-btn sin_submit">立即登录</button></div>',
+            '</div>',
+            '<div class="i-items t_signup" style="display:none;">',
+                '<div id="sup_n_tips" class="i-n-tips" style="display:none;"><p class="i-n-tips-txt"></p></div>',
+                '<div class="i-line-l">',
+                    '<span class="i-txt"><font color="f0000">* </font>通行证账号：</span>',
+                    '<input class="txt-i" type="text" name="sup_act" value="" tabindex="4" t="4-18位字符(首字符必须为字母)" />',
+                    '<div class="i-ipt-tips" style="display:none;"></div>',
+                '</div>',
+                '<div class="i-line-l">',
+                    '<span class="i-txt"><font color="f0000">* </font>密码：</span>',
+                    '<input class="txt-i" type="password" name="sup_pwd" value="" tabindex="5" t="8-32位字符(区分大小写)" />',
+                    '<div class="i-ipt-tips" style="display:none;"></div>',
+                '</div>',
+                '<div class="i-line-l">',
+                    '<span class="i-txt"><font color="f0000">* </font>确认密码：</span>',
+                    '<input class="txt-i" type="password" name="sup_cpwd" value="" tabindex="6" t="请再次确认您的密码" />',
+                    '<div class="i-ipt-tips" style="display:none;"></div>',
+                '</div>',
+                
+                '<div class="t-signup-more-items">',
+                    '<div class="vcode-box">',
+                        '<span class="i-txt">验证码：</span>',
+                        '<div class="i-line-l J_jizhiCodeBoxReg i-jizhi-wrap" style="display:none;">',
+                        '<div class="i-jizhi-login-box" id="captcha-reg">',
+                        '<p id="wait-reg" class="show">正在加载验证码......</p>',
+                        '</div>',
+                    '</div>',
+                    '<div class="i-line-l J_putongCodeBoxReg" style="display:none;">',
+                        '<span class="i-txt"><font color="f0000">* </font>验证码：</span>',
+                        '<input class="txt-i vcode-i" type="text" name="sup_vde" value="" tabindex="7" />',
+                        '<img class="v_code signup_v_code" t="signup" src="//zhcdn01.xoyo.com/xassets/com/pf/xpass/v1/images/code.png" alt="点击更换验证码" />',
+                        '<div class="i-ipt-tips" style="display:none;"></div>',
+                    '</div>',
+                    '</div>',
+                    '<div class="i-line-l">',
+                        '<span class="i-txt"><font color="f0000">* </font>手机号：</span>',
+                        '<input class="txt-i" type="text" name="sup_mobile" value="" tabindex="8" t="请填写您的手机号" />',
+                        '<div class="i-ipt-tips" style="display:none;"></div>',
+                    '</div>',
+
+                    '<div class="i-line-l">',
+                        '<span class="i-txt"><font color="f0000">* </font>短信验证码：</span>',
+                        '<input class="txt-i vcode-i" type="text" name="sup_vde_phone_code" value="" tabindex="9" />',
+                        '<span class="i-txt-get-code J_xpassGetCodeBtn">获取短信验证码</span>',
+                        '<span class="i-txt-get-code i-txt-get-code-gray J_xpassGetCodeSecond" style="display: none;"></span>',
+                           '<div class="i-ipt-tips" style="display:none;"></div>',
+                    '</div>',
+                    '<div class="i-line-l">',
+                        '<span class="i-txt"><font color="f0000">* </font>真实姓名：</span>',
+                        '<input class="txt-i" type="text" name="sup_name" value="" tabindex="10" t="请填写您的真实姓名" />',
+                        '<div class="i-ipt-tips" style="display:none;"></div>',
+                    '</div>',
+                    '<div class="i-line-l">',
+                        '<span class="i-txt"><font color="f0000">* </font>身份证：</span>',
+                        '<input class="txt-i" type="text" name="sup_sfz" value="" tabindex="11" t="请填写您的身份证号码" />',
+                        '<div class="i-ipt-tips" style="display:none;"></div>',
+                    '</div>',
+                '</div>',
+                '<div class="i-agreement-i">',
+                    '<p><label><input class="sup_agreement" type="checkbox" checked="checked" />我已阅读并同意</label></p>',
+                    '<p><a target="_blank" href="http://my.xoyo.com/protocol/help/serviceProtocol">金山网络服务使用协议</a> <a target="_blank" href="http://my.xoyo.com/protocol/help/privacy">金山通行证隐私权政策</a></p>',
+                '</div>',
+                '<div class="i-button-l"><button class="op-btn sup_submit">确认提交</button></div>',
+                '<div align="center">',
+                    '注册遇到问题请 <a target="_blank" ',
+                    'href="//chat.kefu.xoyo.com/live800/chatClient/chatbox.jsp?companyID=8910&configID=12&enterurl=http%3A%2F%2Fkefu.xoyo.com%2Findex.php%3Fact%3Dhelp.index%26type%3Dzhxxxf">',
+                    '<font color="#ff0000"><u>联系在线客服</u></font></a>',
+                    ' | ',
+                    '手机/邮箱注册请 <a target="_blank" href="//my.xoyo.com/register/index/www"><font color="#ff0000"><u>点击此处</u></font></a>',
+                '</div>',
+            '</div>',
+        '</div>'
+    ],
+
+    T = {
+
+        i_tips: function( type, txt, target ){
+            if( !type ){
+                target.removeClass('i-tip i-err i-suc')
+                .html( txt )
+                .hide();
+            }
+            else{
+                target.removeClass('i-tip i-err i-suc')
+                .addClass( type )
+                .html( txt )
+                .show();
+            }
+        },
+
+        n_tips: function( type, txt, target ){
+            var t = $('#' + target),
+                p = t.children('p');
+            if( !type ){
+                $('#sin_n_tips p, #sup_n_tips p')
+                .removeClass('i-tip i-err i-suc').html('');
+                $('#sin_n_tips, #sup_n_tips').hide();
+            }
+            else{
+                p.removeClass('i-tip i-err i-suc').addClass( type );
+                p.html( txt );
+                t.show();
+            }
+        }
+    };
+
+    XPASS = {
+        isjizhilogin:false,
+        isjizhireg:false,
+        init: function(){
+			this.require_css(
+                '//zhcdn01.xoyo.com/',
+                'xassets/com/pf/xpass/v1/xpass.css'
+			);
+			//上线前 修改
+            // this.require_css(
+			// 	'./', 
+			// 	'xpass.css'
+            // );
+            this.rending();
+            this.listener();
+            
+            if( typeof __ozfac2 == "undefined" ){
+                this.require_js(
+                    '//zhcdn01.xoyo.com/', 
+                    'xassets/lib/751code/https/o_code.js'
+                );
+            }
+            if( typeof initGeetest == "undefined" ){
+                this.require_js(
+                    '//zhcdn01.xoyo.com/', 
+                    'xassets/com/pf/xpass/jizhicode/gt.js'
+                );
+            }
+
+        },
+        
+        require_css: function( domain_name, file_path ){
+            var d_name = domain_name || '//zhcdn01.xoyo.com/'; 
+            
+            try{
+                var head = document.getElementsByTagName('head').item(0),
+                    style;
+                
+                style = document.createElement('link');
+                style.setAttribute('rel', 'stylesheet');
+                style.setAttribute('type', 'text/css');
+                style.setAttribute('href', d_name + file_path);
+                head.appendChild(style);
+            }catch(e){}
+        },
+        
+        require_js: function( domain_name, file_path ){
+            var d_name = domain_name || '//zhcdn01.xoyo.com/';
+            
+            try{
+                var head = document.getElementsByTagName('head').item(0),
+                    script;
+                
+                script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.src = d_name + file_path; 
+                head.appendChild(script);
+            }catch(e){}
+        },
+
+        rending: function(userCallback){ //初始化
+            var This = this; 
+            try{
+                $.ajax({
+                    url: xurl + 'get_info',
+                    type: 'GET',
+                    dataType: 'jsonp',
+                    success: function( account ){
+                        //account = ({"code":1,"message":"","data":{"account":"199dqx","request_id":"7CB83AF2-0777-1A84-D185-0C5FD5DA4777"}});
+                        //修改 上线前删除
+                        if( account.code*1 > 0 ){
+                            This.u_account = account.data.account;
+
+                            var _userName = account.data.account;
+                            if( _userName.length > 11 ){
+                                _userName = ( _userName.substr(0, 8) ) + '...';
+                            }
+
+                            if( userCallback && typeof userCallback == 'function' ){ 
+                                userCallback(account.data.account);
+                            }
+
+                            $('.XPASS_signin').remove();
+                            $('.t_xpass_signin_u_i')
+                            .html( '<a class="t_xpass_signin_u_name_i" href="//jx3.xoyo.com/zt/xsjTop/jump.html?id=1"><span>' 
+                                + _userName + '</span></a><a class="t_xpass_s_out" \
+                                href="javascript:XPASS.exit();"><span>退出</span></a>' )
+                            .show();
+                        }
+                    }
+                });
+            }catch(e){}        
+        },
+        
+        isLogin: function(userCallback,nologin){ //获取用户登录信息
+            var This = this; 
+            try{
+                $.ajax({
+                    url: xurl + 'get_info',
+                    type: 'GET',
+                    dataType: 'jsonp',
+                    success: function( account ){
+                        if( account.code*1 > 0 ){
+
+                            if( userCallback && typeof userCallback == 'function' ){ 
+                                userCallback(account.data.account);
+                            }
+                        }else{
+                            if( nologin && typeof nologin == 'function' ){ 
+                                nologin();
+                            }
+                        }
+                    }
+                });
+            }catch(e){}                
+        },        
+
+        pre_authModule : function($bindname){ //获取验证方式
+            var This = this; 
+            try{
+                $.ajax({
+                    url: xurl + 'pre_auth',
+                    type: 'GET',
+                    dataType: 'jsonp',
+                    success: function( account ){
+                        //account = ({"code":1,"message":"","data":{"mode":1,"config":{"success":1,"gt":"9d8e7fc1b0a0c59391a0e227fdb5bda3","challenge":"40a6ef907de22e9166f494be4a94da47","new_captcha":1},"request_id":"25D94F32-80B4-6555-AD21-E5156F8CEA99"}});
+                        //修改 上线前删除
+                        if (account.code > 0) {
+                            if ( account.data.mode == 2 ){  //极致模式
+                                var _gt = account.data.config.gt;
+                                $('.J_jizhiCodeBox, .J_jizhiCodeBoxReg').show();
+                                $('.J_putongCodeBox, .J_putongCodeBoxReg').hide();
+                                
+                                var _challenge = account.data.config.challenge;
+                                var _success = account.data.config.challenge;
+                                var _new_captcha = account.data.config.new_captcha;
+                                initGeetest({
+                                    // 以下配置参数来自服务端 SDK
+                                    gt: _gt,
+                                    challenge: _challenge,
+                                    offline: !_success,
+                                    new_captcha: _new_captcha,
+                                    product: "popup", // 产品形式，包括：float，popup
+                                    width: "214px"
+                                }, $bindname)
+
+                            }else{
+                                $('.J_jizhiCodeBox, .J_jizhiCodeBoxReg').hide();
+                                $('.J_putongCodeBox, .J_putongCodeBoxReg').show();
+                                $bindname()
+                            }
+                        } else {
+                            alert(account.message);
+                        }
+                    }
+                });
+            }catch(e){}            
+        },     
+
+        u_account: this.u_account || '',
+        
+        _callbacks: {
+            'sin_callback': false,
+            'sup_callback': false
+        },
+
+        signin: function( callback ){
+            var This = this;
+            if( callback && typeof callback == 'function' ){
+                this._callbacks.sin_callback = callback;
+            }
+            
+            DOM_List[2] = '<span name="t_signin"><a class="active" href="javascript:;">登录</a></span>';
+            DOM_List[3] = '<span name="t_signup"><a href="javascript:;">注册</a></span>';
+            DOM_List[5] = '<div class="i-items t_signin">';
+            DOM_List[33] = '<div class="i-items t_signup" style="display:none;">';
+
+            art.dialog({
+                'title': '金山通行证',
+                'id': 'XPASS_Dialog',
+                'lock': true,
+                'drag': false,
+                'width': '480px',
+                'content': DOM_List.join('')
+            });        
+            This.isjizhireg = false;
+            This.pre_authModule(This.loginEventBind);
+        },
+
+        signup: function( callback ){
+            var This = this;
+            if( callback && typeof callback == 'function' ){
+                this._callbacks.sup_callback = callback;
+            }
+            
+
+            DOM_List[2] = '<span name="t_signin"><a href="javascript:;">登录</a></span>';
+            DOM_List[3] = '<span name="t_signup"><a class="active" href="javascript:;">注册</a></span>';
+            DOM_List[5] = '<div class="i-items t_signin" style="display:none;">';
+            DOM_List[33] = '<div class="i-items t_signup">';
+
+            art.dialog({
+                'title': '金山通行证',
+                'id': 'XPASS_Dialog',
+                'lock': true,
+                'drag': false,
+                'width': '480px',
+                'content': DOM_List.join('')
+            });    
+            This.isjizhilogin = false;
+            This.pre_authModule(This.regEventBind);                
+        },
+
+        exit: function(){
+            try{
+                $.ajax({
+                    url: xurl + 'logout',
+                    type: 'GET',
+                    dataType: 'jsonp',
+                    jsonpCallback: 'logoutCallback',
+                    success: function( result ){
+                        window.location.reload();
+                    }
+                });
+            }catch(e){}                
+        },
+
+        regEventBind : function(captchaObj){
+            var This=this !=window ? this: XPASS;
+            if( !!captchaObj ){
+
+                captchaObj.appendTo('#captcha-reg');
+                captchaObj.onReady(function () {
+                    $("#wait-reg").hide();
+                });
+
+                This.isjizhireg = true;
+            }
+
+            //获取短信验证码
+            $(document).on('click', '#xsj-xpass .J_xpassGetCodeBtn', function(){
+                var sup_mobile = $('#xsj-xpass input[name="sup_mobile"]'),
+                    sup_mobile_v = $.trim( sup_mobile.val() ),
+                    sup_vde = $('#xsj-xpass input[name="sup_vde"]'),
+                    sup_vde_v = $.trim( sup_vde.val() );
+                
+                if(!!captchaObj){
+                    var resultCode = captchaObj.getValidate();
+                    if (!resultCode) {
+                        alert('请点击按钮完成验证')
+                        return false;
+                    }
+                }else{
+                    if( !sup_vde_v ){
+                        // T.n_tips( 'i-err', '验证码不能为空', 'sup_n_tips' );
+                        T.i_tips( 'i-err', '请输入验证码',
+                            sup_vde.siblings('.i-ipt-tips') );
+                        return false;
+                    }
+                }
+                if( !sup_mobile_v ){
+                    T.i_tips( 'i-err', '请输入手机号',
+                        sup_mobile.siblings('.i-ipt-tips') );
+                    return false;
+                }
+                if( sup_mobile_v.length !== 11 ){
+                    T.i_tips( 'i-err', '手机号格式不正确',
+                        sup_mobile.siblings('.i-ipt-tips') );
+                    return false;
+                }
+
+                var putongGetPhoneCodeCallb = function($data){
+                    if( $data.code == 1 ){
+
+                        $('#xsj-xpass .J_xpassGetCodeBtn').hide();
+                        var $sec = 60;
+                        var InterValObj;
+                        var SetRemainTime = function() {
+                            if ($sec > 0) {
+                                $sec = $sec - 1;
+                                var second = Math.floor($sec % 60);             // 计算秒
+
+                                $('#xsj-xpass .J_xpassGetCodeSecond').css('display','inline-block').html(second + " 秒");
+                            } else {//剩余时间小于或等于0的时候，就停止间隔函数
+                                window.clearInterval(InterValObj);
+                                //这里可以添加倒计时时间为0后需要执行的事件
+                                $('#xsj-xpass .J_xpassGetCodeBtn').show();
+                                $('#xsj-xpass .J_xpassGetCodeSecond').hide();
+
+
+                            }
+                        }
+                        InterValObj = window.setInterval(SetRemainTime, 1000); //间隔函数，1秒执行
+                        if(!!captchaObj) {
+                            captchaObj.reset();
+                        }
+
+                    } else if ($data.code * 1 == -20114) {
+                        alert($data.message)
+                        sup_vde.val('');
+                        $('#xsj-xpass img.signup_v_code').trigger('click');
+                        
+                    } else{
+                        alert($data.message)
+                        //T.n_tips( 'i-err', result.message, 'sup_n_tips' );
+                        captchaObj.reset();
+                    }
+                }
+
+                try{
+                    if(!!captchaObj){  //极致验证
+
+                        $.ajax({
+                            url: xurl + 'send_code',
+                            type: 'GET',
+                            data: {
+                                'geetest_challenge': resultCode.geetest_challenge,
+                                'geetest_validate': resultCode.geetest_validate,
+                                'geetest_seccode': resultCode.geetest_seccode,
+                                'mobile': sup_mobile_v,
+                                'client': 'jx3'
+                            },
+                            dataType: 'jsonp',
+                            beforeSend: function(){
+                                T.n_tips( 'i-tip', '正在为您努力提交...', 'sup_n_tips' );
+                            },
+                            success: function( result ){
+                                putongGetPhoneCodeCallb(result)
+                            }
+                        });
+                    }else{        //普通验证
+                        $.ajax({
+                            url: xurl + 'send_code',
+                            type: 'GET',
+                            data: {
+                                'phrase': sup_vde_v,
+                                'mobile': sup_mobile_v,
+                                'client': 'jx3'
+                            },
+                            dataType: 'jsonp',
+                            beforeSend: function(){
+                                T.n_tips( 'i-tip', '正在为您努力提交...', 'sup_n_tips' );
+                            },
+                            success: function( result ){
+                                putongGetPhoneCodeCallb(result)
+                            }
+                        });
+                    }
+
+                }catch(e){}
+
+            });
+
+            //注册
+            $(document).on('click', '#xsj-xpass .sup_submit', function(){
+                var sup_act = $('#xsj-xpass input[name="sup_act"]'),
+                    sup_pwd = $('#xsj-xpass input[name="sup_pwd"]'),
+                    sup_cpwd = $('#xsj-xpass input[name="sup_cpwd"]'),
+                    sup_name = $('#xsj-xpass input[name="sup_name"]'),
+                    sup_sfz = $('#xsj-xpass input[name="sup_sfz"]'),
+                    sup_mobile = $('#xsj-xpass input[name="sup_mobile"]'),
+                    sup_vde = $('#xsj-xpass input[name="sup_vde_phone_code"]'),
+                    sup_act_v = $.trim( sup_act.val() ),
+                    sup_pwd_v = $.trim( sup_pwd.val() ),
+                    sup_cpwd_v = $.trim( sup_cpwd.val() ),
+                    sup_name_v = $.trim( sup_name.val() ),
+                    sup_sfz_v = $.trim( sup_sfz.val() ),
+                    sup_mobile_v = $.trim( sup_mobile.val() ),
+                    sup_vde_v = $.trim( sup_vde.val() ),
+                    require_more = 1;
+                
+                if( !sup_act_v ){
+                    T.i_tips( 'i-err', '通行证账号不能为空', 
+                        sup_act.siblings('.i-ipt-tips') );
+                    return false;
+                }
+                if( !(/^[a-zA-Z]\w{4,18}$/).test( sup_act_v ) ){
+                    T.i_tips( 'i-err', '通行证账号格式不正确', 
+                        sup_act.siblings('.i-ipt-tips') );
+                    return false;
+                }
+                if( !sup_pwd_v ){
+                    T.i_tips( 'i-err', '密码不能为空', 
+                        sup_pwd.siblings('.i-ipt-tips') );
+                    return false;
+                }
+                if( sup_pwd_v.length < 8 || sup_pwd_v.length > 32 ){
+                    T.i_tips( 'i-err', '密码长度为8-32位字符', 
+                        sup_pwd.siblings('.i-ipt-tips') );
+                    return false;
+                }
+                if( !sup_cpwd_v ){
+                    T.i_tips( 'i-err', '请确认您的密码', 
+                        sup_cpwd.siblings('.i-ipt-tips') );
+                    return false;
+                }
+                if( sup_cpwd_v != sup_pwd_v ){
+                    T.i_tips( 'i-err', '密码不一致', 
+                        sup_cpwd.siblings('.i-ipt-tips') );
+                    return false;
+                }
+
+                if( !sup_mobile_v ){
+                    T.n_tips( 'i-err', '请输入手机号', 'sup_n_tips' );
+                    return false;
+                }
+                
+				if( !sup_vde_v ){
+					T.n_tips( 'i-err', '请输入短信验证码', 'sup_n_tips' );
+					return false;
+				}
+
+                if( !($('input.sup_agreement').prop('checked')) ){
+                    T.n_tips( 'i-tip', '请阅读并同意下方协议', 'sup_n_tips' );
+                    return false;
+                }
+                if( Number( require_more ) != 0 ){
+                    if( !sup_name_v ){
+                        T.i_tips( 'i-err', '真实姓名不能为空', 
+                            sup_name.siblings('.i-ipt-tips') );
+                        return false;
+                    }
+                    if( !(/[\u4E00-\u9FA5]/).test( sup_name_v ) 
+                        || sup_name_v.length < 2 || sup_name_v.length > 8
+                    ){
+                        T.i_tips( 'i-err', '姓名为2-8个汉字', 
+                            sup_name.siblings('.i-ipt-tips') );
+                        return false;
+                    }
+                    if( !sup_sfz_v ){
+                        T.i_tips( 'i-err', '身份证号码不能为空', 
+                            sup_sfz.siblings('.i-ipt-tips') );
+                        return false;
+                    }
+                    if( !( /(^\d{15}$)|(^\d{17}([0-9]|X|x)$)/ ).test( sup_sfz_v ) ){
+                        T.i_tips( 'i-err', '请正确填写身份证号码', 
+                            sup_sfz.siblings('.i-ipt-tips') );
+                        return false;
+                    }
+                }
+                
+                try{
+                    $.ajax({
+                        url: xurl + 'register',
+                        type: 'GET',
+                        data: {
+                            'account': sup_act_v,
+                            'password': sup_pwd_v,
+                            'from': $_REFER,
+                            'target': $_TARGET,
+                            'more': 1,
+                            'name': sup_name_v,
+                            'id_number': sup_sfz_v,
+                            'mobile': sup_mobile_v,
+                            'code': sup_vde_v,
+                            'client': 'jx3'
+                        },
+                        dataType: 'jsonp',
+                        beforeSend: function(){
+                            T.n_tips( 'i-tip', '正在为您努力提交...', 'sup_n_tips' );
+                        },
+                        success: function( result ){
+                            if( result.code == 1 ){
+                                var __callback = This._callbacks['sup_callback'] ||
+                                    function(){
+                                        window.location.reload();
+                                    };
+
+                                This.destroy();
+                                art.dialog({
+                                    'title': '温馨提示',
+                                    'lock': true,
+                                    'drag': false,
+                                    'padding': '20px 50px',
+                                    'content': '注册成功',
+                                    'id':'regokId02',
+                                    'cancel': __callback
+                                });
+                                art.dialog({id: 'regokId02'}).time(2);
+
+                                // 751 统计代码开始
+                                var _userNameReg = result.data.account;
+                                _ozprm = "username=" + _userNameReg;
+                                if( typeof( __ozfac2 ) != 'undefined' ) {
+                                    var tprm = "username=" + _userNameReg;
+                                    __ozfac2(tprm, "#success");
+                                }
+                                // 751 统计代码结束
+
+                            }else{
+                                T.n_tips( 'i-err', result.message, 'sup_n_tips' );
+                            }
+                            $('img.signup_v_code').trigger('click');
+                        }
+                    });
+
+
+                }catch(e){}                        
+                
+            });
+        },
+        loginEventBind : function(captchaObj){
+            var This=this !=window ? this: XPASS;
+            
+            if( !!captchaObj ){
+                captchaObj.appendTo('#captcha-login');
+                captchaObj.onReady(function () {
+                    $("#wait-login").hide();
+                });
+                This.isjizhilogin = true;
+            }
+            $(document).on('click', '#xsj-xpass .sin_submit', function(){
+                var sin_act = $('#xsj-xpass input[name="sin_act"]'),
+                    sin_pwd = $('#xsj-xpass input[name="sin_pwd"]'),
+                    sin_vde = $('#xsj-xpass input[name="sin_vde"]'),
+                    sin_act_v = $.trim( sin_act.val() ),
+                    sin_pwd_v = $.trim( sin_pwd.val() ),
+                    sin_vde_v = $.trim( sin_vde.val() );
+
+                if( !sin_act_v ){
+                    sin_act.focus();
+                    return false;
+                }
+                else if( !sin_pwd_v ){
+                    sin_pwd.focus();
+                    return false;    
+                }
+                if(!!captchaObj){
+
+                }else{
+                    if( !sin_vde_v ){
+                        T.n_tips( 'i-err', '验证码不能为空', 'sin_n_tips' );
+                        return false;    
+                    }    
+                }
+                try{
+                    if(!!captchaObj){
+                        var resultCode = captchaObj.getValidate();
+                        if (!resultCode) {
+                            
+                            return false;
+                        }
+                        $.ajax({
+                            url: xurl + 'login',
+                            type: 'GET',
+                            dataType: 'jsonp',
+                            data: {
+                                geetest_challenge: resultCode.geetest_challenge,
+                                geetest_validate: resultCode.geetest_validate,
+                                geetest_seccode: resultCode.geetest_seccode,
+                                account: sin_act_v,
+                                password: sin_pwd_v
+                            },
+                            success: function ($data) {
+                                if ($data.code*1 > 0) {
+                                    This.destroy();
+                                    This.u_account = $data.data.account;
+                                    if( This._callbacks['sin_callback'] ){
+                                        This._callbacks.sin_callback.apply();
+                                    }
+                                    else{
+                                        window.location.reload();
+                                    }
+                                    
+                                }else if( $data.code == -20113 ){
+                                    T.n_tips( 'i-err', '请先点击按钮进行验证', 'sin_n_tips' );
+                                    captchaObj.reset();    
+                                } else {
+                                    T.n_tips( 'i-err', $data.message, 'sin_n_tips' );    
+                                    captchaObj.reset();
+                                }
+                            }
+                        });
+                    }else{
+                        $.ajax({
+                            url: xurl + 'login',
+                            type: 'GET',
+                            data: {
+                                'account': sin_act_v,
+                                'password': sin_pwd_v,
+                                'phrase': sin_vde_v
+                            },
+                            dataType: 'jsonp',
+                            jsonpCallback: 'loginCallback',
+                            beforeSend: function(){
+                                T.n_tips( 'i-tip', '正在为您努力登录...', 'sin_n_tips' );
+                            },
+                            success: function( result ){
+                                if( result.code == 1 ){
+                                    This.destroy();
+                                    This.u_account = result.data.account;
+                                    if( This._callbacks['sin_callback'] ){
+                                        This._callbacks.sin_callback.apply();
+                                    }
+                                    else{
+                                        window.location.reload();
+                                    }
+                                }
+                                else{
+                                    T.n_tips( 'i-err', result.message, 'sin_n_tips' );    
+                                }
+                                $('img.signin_v_code').trigger('click');
+                            }
+                        });    
+                    }
+
+                }catch(e){}    
+                  
+            });
+        },
+
+        listener: function(){
+            
+            var This = this;
+            $(document)
+            .on('click', '#xsj-xpass .s-tabs span', function(){
+                var $_this = $(this),
+                    t = $_this.attr('name');
+                $('#xsj-xpass .s-tabs span a').removeClass('active');
+                $_this.children('a').addClass('active');
+
+                $('#xsj-xpass .i-items').hide();
+                $('#xsj-xpass .' + t ).show();
+                if(t == 't_signin'){
+
+                    if( This.isjizhilogin ){
+
+                    }else{
+                        This.pre_authModule(This.loginEventBind);
+                    }
+                    
+                }
+                if(t == 't_signup'){
+                    if( This.isjizhireg ){
+
+                    }else{
+                        This.pre_authModule(This.regEventBind);    
+                    }
+                    
+                }
+            })
+            
+            .on('click', 'a.sin_t_sup', function(){
+                $('#xsj-xpass .s-tabs span[name="t_signup"]').trigger('click');
+            })
+            .on('click', 'img.v_code', function(){
+                var $_this = $(this);
+                $_this.attr(
+                    'src',
+                    xurl + 'captcha?t=' + Math.random() 
+                );    
+            })
+            .on('focus', '#xsj-xpass input', function(){
+                var $_this = $(this),
+                    t = $_this.attr('t'),
+                    target = $_this.siblings('.i-ipt-tips');
+                if( t ){
+                    T.i_tips( 'i-tip', t, target );
+                }
+                T.n_tips( false );
+            })
+            .on('blur', '#xsj-xpass .t_signin input', function(){
+                var $_this = $(this),
+                    v = $.trim( $_this.val() );
+                if( v ){
+                    $_this.siblings('.i-ipt-tips')
+                    .removeClass('i-tip i-err i-suc')
+                    .html('').hide();
+                }
+            })
+            .on('blur', '#xsj-xpass .t_signup input', function(){
+                var $_this = $(this),
+                    v = $.trim( $_this.val() ),
+                    n = $_this.attr('name'),
+                    t = '',
+                    target = $_this.siblings('.i-ipt-tips');
+                
+                if( n == 'sup_act' ){
+
+                    if( !v ){
+                        T.i_tips( 'i-err', '通行证账号不能为空', target );
+                    }else if( !v.match(/^[a-zA-Z]/) ){
+                        T.i_tips( 'i-err', '首字符请使用字母', target );
+                    }else if( v.match(/^(gm)/i) ){
+                        T.i_tips( 'i-err', '首字符不能用“gm”', target );
+                        errorInfo('首字符不能用“gm”');
+                    }else if( v.match(/^(kingsoft|cb|ks|test|fs|jx|db|cq|blog|passport|vip|wps|system|damei|xoyo|kol|bjsupport)/i) ){
+                        T.i_tips( 'i-err', '账号开头不符合规范', target );
+                    }else if( v.match(/hujintao|wenjiabao|xijinping|jiangzemin|zhurongji|qiubojun|leijun|flg|falun|minghui|lihongzhi|tmd|nmd|fuck|sex|xxx|penis|viagra|tits|pussy|shit|damn|bastard|asshole|bitch|vagina|breastroot|root|admin|gamemaster|xoyo|kol/i) ){
+                        T.i_tips( 'i-err', '账号包含了非法字符', target );
+                    }else if( v.length<4 || v.length>18 ){
+                        T.i_tips( 'i-err', '账号长度4-18个字符', target );
+                    }else if( !(/^[a-zA-Z]\w{3,17}$/).test( v ) ){
+                        T.i_tips( 'i-err', '账号格式不正确', target );
+                    }else{
+                        T.i_tips( false, '', target );
+                    }
+                }
+
+                if( n == 'sup_pwd' ){
+                    if( !v ){
+                        T.i_tips( 'i-err', '密码不能为空', target );    
+                    }
+                    else if( v.length < 8 || v.length > 32 ){
+                        T.i_tips( 'i-err', '密码长度为8-32位字符', target );
+                    }
+                    else{
+                        T.i_tips( false, '', target );
+                    }
+                }
+                if( n == 'sup_vde' ){
+                    if( !v ){
+                        T.i_tips( 'i-err', '请输入验证码', target );
+                    }
+                    else{
+                        T.i_tips( false, '', target );
+                    }
+                }
+                if( n == 'sup_mobile' ){
+                    if( !v ){
+                        T.i_tips( 'i-err', '手机号不能为空', target );
+                    }
+                    else if( v.length!== 11 ){
+                        T.i_tips( 'i-err', '手机号格式不正确', target );
+                    }
+                    else{
+                        T.i_tips( false, '', target );
+                    }
+                }
+                if( n == 'sup_vde_phone_code' ){
+                    if( !v ){
+                        T.i_tips( 'i-err', '请输入短信验证码', target );
+                    }
+                    else{
+                        T.i_tips( false, '', target );
+                    }
+                }
+                if( n == 'sup_cpwd' ){
+                    var pwd = $.trim( $('input[name="sup_pwd"]').val() ),
+                        cpwd = $.trim( $('input[name="sup_cpwd"]').val() );
+                    if( !v ){
+                        T.i_tips( 'i-err', '请确认您的密码', target );    
+                    }
+                    else if( cpwd != pwd ){
+                        T.i_tips( 'i-err', '密码不一致', target );
+                    }
+                    else{
+                        T.i_tips( false, '', target );
+                    }
+                }
+                if( n == 'sup_name' ){
+                    if( !v ){
+                        T.i_tips( 'i-err', '真实姓名不能为空', target );
+                    }
+                    else if( !(/[\u4E00-\u9FA5]/).test( v ) 
+                        || v.length < 2 || v.length > 8
+                    ){
+                        T.i_tips( 'i-err', '姓名为2-8个汉字', target );
+                    }
+                    else{
+                        T.i_tips( false, '', target );
+                    }
+                }
+                if( n == 'sup_sfz' ){
+                    if( !v ){
+                        T.i_tips( 'i-err', '身份证号码不能为空', target );
+                    }
+                    else if( !( /(^\d{15}$)|(^\d{17}([0-9]|X|x)$)/ ).test( v ) ){
+                        T.i_tips( 'i-err', '请正确填写身份证号码', target );
+                    }
+                    else{
+                        T.i_tips( false, '', target );
+                    }
+                }
+
+            })
+        },
+        destroy: function(){
+            art.dialog.list['XPASS_Dialog'].close();
+        }
+
+    };
+    
+    XPASS.init();    
+    w.XPASS = XPASS; 
+
+})( window );
+
